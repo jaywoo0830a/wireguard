@@ -1,0 +1,47 @@
+name: wireguard
+
+services:
+  wireguard:
+    image: lscr.io/linuxserver/wireguard:latest
+    container_name: wireguard
+    restart: unless-stopped
+
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+
+    volumes:
+      - ./config:/config
+      - /lib/modules:/lib/modules:ro
+
+    ports:
+      - "51820:51820/udp"
+
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+      - net.ipv4.ip_forward=1
+      - net.ipv6.conf.all.forwarding=1
+
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Seoul
+
+      # 반드시 서버의 공인 IP 또는 도메인
+      - SERVERURL=${WG_SERVERURL}
+      - SERVERPORT=${WG_SERVERPORT}
+
+      # 최초 생성할 peer 수
+      - PEERS=${WG_PEERS}
+
+      # iOS에서 매우 중요
+      - PEERDNS=${WG_PEERDNS}
+
+      # WireGuard 내부 대역
+      - INTERNAL_SUBNET=${WG_INTERNAL_SUBNET}
+
+      # Full tunnel / Split tunnel
+      - ALLOWEDIPS=${WG_ALLOWEDIPS}
+
+      # 모바일 NAT 안정성
+      - PERSISTENTKEEPALIVE_PEERS=${WG_KEEPALIVE}
