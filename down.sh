@@ -2,7 +2,9 @@
 set -euo pipefail
 
 COMPOSE_FILE="${COMPOSE_FILE:-./compose.yaml}"
-WG_PORT="${WG_PORT:-51820}"
+ENV_FILE="${ENV_FILE:-./.env}"
+[[ -f "$ENV_FILE" ]] && { set -a; . "$ENV_FILE"; set +a; }
+WG_PORT="${WG_SERVERPORT:-51820}"
 NFT_CHAIN="inet host_fw input"
 RULE_MATCH="managed-by=wireguard;udp:${WG_PORT}"
 
