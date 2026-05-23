@@ -35,6 +35,9 @@ sudo bash ./init.sh
 | `sudo bash ./init.sh` | 최초 기동: 커널 모듈 로드 + nftables 룰 추가 + 컨테이너 기동 |
 | `sudo bash ./up.sh` | 컨테이너만 기동 |
 | `sudo bash ./down.sh` | 컨테이너 정지 + nftables 룰 제거 |
+| `bash ./peer.sh list` | 피어 목록 조회 |
+| `bash ./peer.sh show <n>` | 피어 n의 .conf 내용 출력 |
+| `bash ./peer.sh export <n> [dir]` | 피어 n의 .conf(및 QR)를 지정 디렉터리로 복사 |
 
 ## 환경 변수 (.env)
 
@@ -55,6 +58,24 @@ sudo bash ./init.sh
 ```bash
 sudo bash ./down.sh
 sudo bash ./init.sh
+```
+
+## 피어 설정 추출
+
+`peer.sh`로 피어 config 파일을 조회/추출할 수 있습니다 (sudo 불필요):
+
+```bash
+# 피어 목록 확인
+bash ./peer.sh list
+
+# peer1의 .conf 내용 터미널에 출력
+bash ./peer.sh show 1
+
+# peer1의 QR 이미지 경로 확인
+bash ./peer.sh qr 1
+
+# peer1의 .conf + QR을 ~/Downloads 로 복사
+bash ./peer.sh export 1 ~/Downloads
 ```
 
 ## 트러블슈팅

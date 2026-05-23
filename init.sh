@@ -6,7 +6,7 @@ ENV_FILE="${ENV_FILE:-./.env}"
 [[ -f "$ENV_FILE" ]] && { set -a; . "$ENV_FILE"; set +a; }
 WG_PORT="${WG_SERVERPORT:-51820}"
 NFT_CHAIN="inet host_fw input"
-RULE_COMMENT="managed-by=wireguard;udp:${WG_PORT}"
+RULE_MATCH="managed-by=wireguard;udp:${WG_PORT}"
 
 need_root() {
   [[ $EUID -eq 0 ]] || { echo "ERROR: run as root (sudo)"; exit 1; }
@@ -18,14 +18,15 @@ compose() { docker compose -f "${COMPOSE_FILE}" "$@"; }
 add_fw_rule() {
   echo "[init] Ensuring UDP ${WG_PORT} allowed in host_fw"
 
-  if nft list chain ${NFT_CHAIN} | grep -q "udp dport ${WG_PORT}"; then
-    echo "[init] Firewall rule already exists"
+  if nft list chain ${NFT_CHAIN} 2>/dev/null | grep -q "${RULE_MATCH}"; then
+    echo "[init] Firewall rule already exists (matched: ${RULE_MATCH})"
     return
   fi
 
   nft add rule ${NFT_CHAIN} \
     udp dport ${WG_PORT} ct state new accept \
-    comment "\"${RULE_COMMENT}\""
+    comment "\"${RULE_MATCH}\""
+  echo "[init] Firewall rule added"
 }
 
 main() {
