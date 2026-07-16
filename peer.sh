@@ -102,7 +102,13 @@ cmd_export() {
   peer_dir=$(resolve_peer_dir "${num}")
   conf_file=$(find_conf "${peer_dir}")
 
-  mkdir -p "${out_dir}"
+  # 출력 디렉터리 유효성 검사
+  if [[ ! -d "${out_dir}" ]]; then
+    mkdir -p "${out_dir}" || die "cannot create output directory: ${out_dir}"
+  fi
+  if [[ ! -w "${out_dir}" ]]; then
+    die "output directory is not writable: ${out_dir}"
+  fi
   local dest="${out_dir}/$(basename "${conf_file}")"
   cp "${conf_file}" "${dest}"
   echo "Exported: ${dest}"

@@ -8,7 +8,6 @@ services:
 
     cap_add:
       - NET_ADMIN
-      - SYS_MODULE
 
     volumes:
       - ./config:/config
@@ -23,25 +22,45 @@ services:
       - net.ipv6.conf.all.forwarding=1
 
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Asia/Seoul
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Asia/Seoul}
 
-      # 반드시 서버의 공인 IP 또는 도메인
+      # Server public IP or domain (required)
       - SERVERURL=${WG_SERVERURL}
       - SERVERPORT=${WG_SERVERPORT}
 
-      # 최초 생성할 peer 수
+      # Initial number of peers to create
       - PEERS=${WG_PEERS}
 
-      # iOS에서 매우 중요
+      # DNS for peers (important for iOS)
       - PEERDNS=${WG_PEERDNS}
 
-      # WireGuard 내부 대역
+      # WireGuard internal subnet
       - INTERNAL_SUBNET=${WG_INTERNAL_SUBNET}
 
       # Full tunnel / Split tunnel
       - ALLOWEDIPS=${WG_ALLOWEDIPS}
 
-      # 모바일 NAT 안정성
+      # Persistent keepalive for NAT stability (mobile recommended)
       - PERSISTENTKEEPALIVE_PEERS=${WG_KEEPALIVE}
+
+    healthcheck:
+      test: ["CMD", "wg", "show"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 32M
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

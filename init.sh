@@ -36,7 +36,17 @@ main() {
   have_cmd nft || { echo "ERROR: nft not installed"; exit 1; }
 
   echo "[init] Loading WireGuard kernel module"
-  modprobe wireguard 2>/dev/null || true
+  if ! modprobe wireguard 2>/dev/null; then
+    # modprobe 실패: 이미 로드되었거나 호스트에 모듈이 없는 경우
+    if ! lsmod | grep -q wireguard; then
+      echo "[init] WARNING: wireguard kernel module not loaded and modprobe failed."
+      echo "[init] The container may still work if the host kernel has wireguard built-in."
+    else
+      echo "[init] wireguard module already loaded (modprobe reported error but lsmod confirms it)"
+    fi
+  else
+    echo "[init] wireguard module loaded successfully"
+  fi
 
   add_fw_rule
 

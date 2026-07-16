@@ -1,2 +1,17 @@
-config
+# Environment variables (contains sensitive data)
 .env
+
+# WireGuard config files (contains keypairs)
+config/
+
+# Peer config export directory
+out/
+
+# macOS
+.DS_Store
+
+# Editor swap files
+*.swp
+*.swo
+*~
+
