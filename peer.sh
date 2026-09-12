@@ -70,7 +70,9 @@ cmd_list() {
     echo "    qr    → ${png_file}"
   done
 
-  [[ ${found} -eq 0 ]] && echo "  (no peers found)"
+  if [[ ${found} -eq 0 ]]; then
+    echo "  (no peers found)"
+  fi
 }
 
 cmd_show() {

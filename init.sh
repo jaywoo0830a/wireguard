@@ -15,6 +15,20 @@ need_root() {
 have_cmd() { command -v "$1" >/dev/null 2>&1; }
 compose() { docker compose -f "${COMPOSE_FILE}" "$@"; }
 
+# host_fw 테이블/체인이 없으면 자동 생성 (재부팅 후에도 안전)
+ensure_fw_chain() {
+  local table="inet host_fw"
+  local chain="inet host_fw input"
+  if ! nft list table ${table} >/dev/null 2>&1; then
+    echo "[init] Creating nftables table: ${table}"
+    nft add table ${table}
+  fi
+  if ! nft list chain ${chain} >/dev/null 2>&1; then
+    echo "[init] Creating nftables chain: ${chain}"
+    nft "add chain ${chain} { type filter hook input priority 0; policy accept; }"
+  fi
+}
+
 add_fw_rule() {
   echo "[init] Ensuring UDP ${WG_PORT} allowed in host_fw"
 
@@ -34,6 +48,8 @@ main() {
   have_cmd docker || { echo "ERROR: docker not found"; exit 1; }
   docker compose version >/dev/null 2>&1 || { echo "ERROR: docker compose plugin missing"; exit 1; }
   have_cmd nft || { echo "ERROR: nft not installed"; exit 1; }
+
+  ensure_fw_chain
 
   echo "[init] Loading WireGuard kernel module"
   if ! modprobe wireguard 2>/dev/null; then
